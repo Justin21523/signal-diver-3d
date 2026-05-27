@@ -10,5 +10,21 @@ export default defineConfig({
   build: {
     sourcemap: true,
     target: 'es2020',
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        // Code-splitting to optimize initial load time
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
+          'vendor-phaser': ['phaser'],
+          'vendor-state': ['zustand'],
+        },
+        // Clean up chunk names
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+      },
+    },
   },
 });
