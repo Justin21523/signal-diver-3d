@@ -1,7 +1,6 @@
 import type { Vector3 } from './player';
 
-export type GameState = 'loading' | 'playing' | 'paused' | 'menu' | 'puzzle';
-
+export type GameState = 'menu' | 'loading' | 'playing' | 'paused' | 'puzzle' | 'cinematic' | 'ending';
 export type ZoneType = 'shallow' | 'mid' | 'deep' | 'abyss' | 'anomaly';
 
 export interface Objective {

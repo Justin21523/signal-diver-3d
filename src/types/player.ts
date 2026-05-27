@@ -1,3 +1,5 @@
+export type MissionStatus = 'idle' | 'active' | 'completed' | 'failed';
+
 export interface Vector3 {
   x: number;
   y: number;
@@ -24,4 +26,21 @@ export interface PlayerInput {
   scan: boolean;      // E
   interact: boolean;   // F
   archive: boolean;    // Tab
+  mute: boolean;       // M
+}
+
+export interface Mission {
+  id: string;
+  title: string;
+  description: string;
+  status: MissionStatus;
+  conditionType: 'depth' | 'fragments' | 'nodes' | 'zone';
+  threshold: number;
+  reward?: string;
+}
+export interface EventNotification {
+  id: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  duration: number;
 }
