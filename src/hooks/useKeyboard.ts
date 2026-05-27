@@ -9,6 +9,10 @@ const EMPTY_INPUT: PlayerInput = {
   up: false,
   down: false,
   boost: false,
+  scan: false,      // E
+  interact: false,   // F
+  archive: false,    // Tab
+  mute: false        // M
 };
 
 export const useKeyboard = () => {
@@ -50,6 +54,10 @@ export const useKeyboard = () => {
     input.current.up = k.has('Space');
     input.current.down = k.has('ControlLeft') || k.has('ControlRight');
     input.current.boost = k.has('ShiftLeft') || k.has('ShiftRight');
+    input.current.scan = k.has('KeyE');
+    input.current.interact = k.has('KeyF');
+    input.current.archive = k.has('Tab');
+    input.current.mute = k.has('KeyM');
     return input.current;
   }, []);
 
