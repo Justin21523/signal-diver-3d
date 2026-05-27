@@ -25,7 +25,7 @@ const DebugPanel = () => {
   const setFps = useDebugStore((s) => s.setFps);
 
   const frameCountRef = useRef(0);
-  const lastTimeRef = useRef(performance.now());
+  const lastTimeRef = useRef(0);
 
   // Independent FPS counter (does not depend on R3F frame loop)
   useEffect(() => {

@@ -1,7 +1,11 @@
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useGameStore } from '../../store/useGameStore';
+import { useAudioStore } from '../../store/useAudioStore';
 import SignalMeter from './SignalMeter';
 import ObjectiveDisplay from './ObjectiveDisplay';
+import Radar from './Radar';
+import { useTelemetryStore } from '../../store/useTelemetryStore';
+import { useThreatStore } from '../../store/useThreatStore';
 
 const StatCell = ({
   label,
@@ -32,9 +36,18 @@ const HUD = () => {
   const fragmentsCollected = useGameStore((s) => s.fragments.filter(f => f.collected).length);
   const nodesRepaired = useGameStore((s) => s.nodes.filter(n => n.repaired).length);
   const isArchiveOpen = useGameStore((s) => s.isArchiveOpen); 
+  
+  const isMuted = useAudioStore((s) => s.isMuted);
+  const toggleMute = useAudioStore((s) => s.toggleMute);
+  
+  const exportData = useTelemetryStore((s) => s.exportData);
+  
+  const threatLevel = useThreatStore((s) => s.level);
+  const isHunted = useThreatStore((s) => s.isHunted);
 
   return (
     <div className={`absolute inset-0 pointer-events-none ${isArchiveOpen ? 'opacity-30' : ''} transition-opacity`}>
+      <Radar />
       {/* Top left: depth + speed */}
       <div className="absolute top-6 left-6 space-y-3">
         <StatCell label="Depth" value={depth.toFixed(1)} unit="m" />
@@ -51,8 +64,39 @@ const HUD = () => {
       {/* Top right: signal meter */}
       <div className="absolute top-6 right-6">
         <SignalMeter />
+        <button 
+          onClick={toggleMute} 
+          className="bg-black/55 backdrop-blur-sm border border-cyan-400/30 rounded-lg px-3 py-2 text-xs font-mono text-cyan-300 hover:bg-cyan-900/30 transition pointer-events-auto"
+        >
+          {isMuted ? '🔇 UNMUTE AUDIO' : '🔊 MUTE AUDIO'}
+        </button>
+        {/* Export telemetry button */}
+        <button 
+          onClick={exportData} 
+          className="bg-black/55 backdrop-blur-sm border border-purple-400/30 rounded-lg px-3 py-2 text-xs font-mono text-purple-300 hover:bg-purple-900/30 transition pointer-events-auto"
+          title="Export Telemetry JSON"
+        >
+          📊 EXPORT DATA
+        </button>
+        {/* Threat level indicator */}
+        <div className={`bg-black/55 backdrop-blur-sm border rounded-lg px-4 py-3 min-w-[190px] transition-colors ${
+          isHunted ? 'border-red-500/60 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'border-cyan-400/30'
+        }`}>
+          <div className="text-[10px] text-cyan-300/70 uppercase tracking-[0.2em] mb-1">Threat Level</div>
+          <div className="w-full bg-gray-800 rounded-full h-2 mb-1">
+            <div 
+              className={`h-2 rounded-full transition-all duration-300 ${isHunted ? 'bg-red-500' : 'bg-yellow-500'}`} 
+              style={{ width: `${threatLevel}%` }} 
+            />
+          </div>
+          <div className={`text-xs font-mono ${isHunted ? 'text-red-400 animate-pulse' : 'text-cyan-200/60'}`}>
+            {isHunted ? '⚠ HUNTED' : threatLevel < 20 ? 'SAFE' : 'ELEVATED'}
+          </div>
+        </div>
       </div>
 
+
+      
       {/* Bottom left: objective */}
       <div className="absolute bottom-10 left-6 max-w-md">
         <ObjectiveDisplay />
