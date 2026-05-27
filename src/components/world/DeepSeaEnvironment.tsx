@@ -1,36 +1,44 @@
 import * as THREE from 'three';
-import { useMemo, useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { BufferGeometry, BufferAttribute, Points, AdditiveBlending } from 'three';
 import { WORLD_CONFIG } from '../../utils/constants';
 
-const PARTICLE_COUNT = 2000;
+const MAX_PARTICLES = 3000;
 const SPREAD = 280;
 const VERTICAL_SPREAD = 180;
 
-const DeepSeaEnvironment = () => {
+const BASE_POSITIONS = (() => {
+  const arr = new Float32Array(MAX_PARTICLES * 3);
+  for (let i = 0; i < MAX_PARTICLES; i++) {
+    arr[i * 3] = (Math.random() - 0.5) * SPREAD;
+    arr[i * 3 + 1] = (Math.random() - 0.5) * VERTICAL_SPREAD;
+    arr[i * 3 + 2] = (Math.random() - 0.5) * SPREAD;
+  }
+  return arr;
+})();
+
+interface Props {
+  particleCount?: number;
+  fogFar?: number;
+}
+
+const DeepSeaEnvironment = ({ particleCount = 2000, fogFar }: Props) => {
   const pointsRef = useRef<Points>(null);
   const lightShaftsRef = useRef<THREE.Group>(null);
 
   const geometry = useMemo(() => {
-    const positions = new Float32Array(PARTICLE_COUNT * 3);
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * SPREAD;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * VERTICAL_SPREAD;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * SPREAD;
-    }
     const geo = new BufferGeometry();
-    geo.setAttribute('position', new BufferAttribute(positions, 3));
+    geo.setAttribute('position', new BufferAttribute(BASE_POSITIONS.slice(0, particleCount * 3), 3));
     return geo;
-  }, []);
+  }, [particleCount]);
 
   useFrame(({ clock }) => {
     if (pointsRef.current) {
       const t = clock.getElapsedTime() * 0.15;
       pointsRef.current.rotation.y = t;
-      // Subtle drift
       const pos = pointsRef.current.geometry.attributes.position;
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
+      for (let i = 0; i < particleCount; i++) {
         pos.setY(i, pos.getY(i) + Math.sin(t + i * 0.02) * 0.005);
       }
       pos.needsUpdate = true;
@@ -40,12 +48,13 @@ const DeepSeaEnvironment = () => {
     }
   });
 
+  const effectiveFogFar = fogFar ?? WORLD_CONFIG.fogFar;
+
   return (
     <>
       <color attach="background" args={[WORLD_CONFIG.backgroundColor]} />
-      <fog attach="fog" args={[WORLD_CONFIG.fogColor, WORLD_CONFIG.fogNear, WORLD_CONFIG.fogFar]} />
+      <fog attach="fog" args={[WORLD_CONFIG.fogColor, WORLD_CONFIG.fogNear, effectiveFogFar]} />
 
-      {/* Marine snow / plankton */}
       <points ref={pointsRef} geometry={geometry}>
         <pointsMaterial
           size={0.25}
@@ -58,7 +67,6 @@ const DeepSeaEnvironment = () => {
         />
       </points>
 
-      {/* Fake light shafts (volumetric feel) */}
       <group ref={lightShaftsRef} position={[0, 30, 0]}>
         {Array.from({ length: 6 }).map((_, i) => (
           <mesh

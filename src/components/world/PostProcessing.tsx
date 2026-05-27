@@ -1,12 +1,15 @@
 import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
+import { useSettingsStore } from '../../store/useSettingsStore';
 
 const PostProcessing = () => {
+  const bloomIntensity = useSettingsStore((s) => s.bloomIntensity);
+
   return (
-    <EffectComposer disableNormalPass>
+    <EffectComposer enableNormalPass={false}>
       <Bloom
         luminanceThreshold={0.15}
         luminanceSmoothing={0.85}
-        intensity={0.65}
+        intensity={bloomIntensity}
         radius={0.4}
       />
       <Noise opacity={0.08} />
